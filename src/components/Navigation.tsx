@@ -1,14 +1,27 @@
-import { Plus, Store, Search } from "lucide-react";
+import { Plus, Store, Search, LogIn, LogOut } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { AuthUser, authApi } from "@/lib/api";
 
 interface NavigationProps {
   onAddProduct: () => void;
   searchTerm: string;
   onSearchChange: (term: string) => void;
+  user: AuthUser | null;
+  onShowAuth: () => void;
+  onLogout: () => void;
 }
 
-export function Navigation({ onAddProduct, searchTerm, onSearchChange }: NavigationProps) {
+export function Navigation({
+  onAddProduct,
+  searchTerm,
+  onSearchChange,
+  user,
+  onShowAuth,
+  onLogout,
+}: NavigationProps) {
+  const navigate = useNavigate();
   return (
     <nav className="border-b bg-card/80 backdrop-blur-sm sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4">
@@ -19,7 +32,9 @@ export function Navigation({ onAddProduct, searchTerm, onSearchChange }: Navigat
               <Store className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-foreground">FashionStore</h1>
+              <h1 className="text-xl font-bold text-foreground">
+                FashionStore
+              </h1>
               <p className="text-xs text-muted-foreground">Premium Clothing</p>
             </div>
           </div>
@@ -36,13 +51,28 @@ export function Navigation({ onAddProduct, searchTerm, onSearchChange }: Navigat
           </div>
 
           {/* Actions */}
-          <Button 
-            onClick={onAddProduct}
-            className="btn-fashion"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Thêm sản phẩm
-          </Button>
+          <div className="flex items-center gap-2">
+            {user ? (
+              <>
+                <span className="text-sm text-muted-foreground hidden sm:inline">
+                  {user.email}
+                </span>
+                <Button onClick={onAddProduct} className="btn-fashion">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Thêm sản phẩm
+                </Button>
+                <Button variant="outline" onClick={onLogout}>
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Đăng xuất
+                </Button>
+              </>
+            ) : (
+              <Button variant="outline" onClick={() => navigate("/login")}>
+                <LogIn className="h-4 w-4 mr-2" />
+                Đăng nhập
+              </Button>
+            )}
+          </div>
         </div>
       </div>
     </nav>

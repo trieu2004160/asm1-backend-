@@ -7,13 +7,16 @@ import { ProductCard, Product } from "@/components/ProductCard";
 import { ProductForm } from "@/components/ProductForm";
 import { ProductDetail } from "@/components/ProductDetail";
 import heroImage from "@/assets/fashion-hero.jpg";
-import { productsApi, ApiProduct } from "@/lib/api";
+import { productsApi, ApiProduct, authApi, AuthUser } from "@/lib/api";
+import { AuthDialog } from "@/components/AuthDialog";
 
 const Index = () => {
   const { toast } = useToast();
 
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const [user, setUser] = useState<AuthUser | null>(authApi.getCurrentUser());
+  const [showAuth, setShowAuth] = useState(false);
   useEffect(() => {
     const loadProducts = async () => {
       try {
@@ -57,11 +60,19 @@ const Index = () => {
   }, [products, searchTerm]);
 
   const handleAddProduct = () => {
+    if (!user) {
+      setShowAuth(true);
+      return;
+    }
     setEditingProduct(null);
     setShowForm(true);
   };
 
   const handleEditProduct = (product: Product) => {
+    if (!user) {
+      setShowAuth(true);
+      return;
+    }
     setEditingProduct(product);
     setShowForm(true);
   };
@@ -128,6 +139,10 @@ const Index = () => {
   };
 
   const handleDeleteProduct = async (id: string) => {
+    if (!user) {
+      setShowAuth(true);
+      return;
+    }
     try {
       await productsApi.remove(id);
       setProducts((prev) => prev.filter((p) => p.id !== id));
@@ -157,6 +172,12 @@ const Index = () => {
         onAddProduct={handleAddProduct}
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
+        user={user}
+        onShowAuth={() => setShowAuth(true)}
+        onLogout={() => {
+          authApi.logout();
+          setUser(null);
+        }}
       />
 
       {/* Hero Section */}
@@ -239,6 +260,7 @@ const Index = () => {
                     onEdit={handleEditProduct}
                     onDelete={handleDeleteProduct}
                     onView={handleViewProduct}
+                    canManage={!!user}
                   />
                 </div>
               ))}
@@ -265,6 +287,11 @@ const Index = () => {
         }}
         onEdit={handleEditProduct}
         onDelete={handleDeleteProduct}
+      />
+      <AuthDialog
+        isOpen={showAuth}
+        onClose={() => setShowAuth(false)}
+        onAuthenticated={(u) => setUser(u)}
       />
     </div>
   );
