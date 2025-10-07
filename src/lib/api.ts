@@ -68,6 +68,10 @@ export const authApi = {
         const { data } = await api.post("/api/auth/login", { email, password });
         return data;
     },
+    googleLogin: async (credential: string): Promise<AuthResponse> => {
+        const { data } = await api.post("/api/auth/google", { credential });
+        return data;
+    },
     logout: async (): Promise<void> => {
         localStorage.removeItem("tc_token");
         localStorage.removeItem("tc_user");
