@@ -101,18 +101,18 @@ const Signup = () => {
   }, [handleGoogleSuccess]);
 
   return (
-    <div className="flex min-h-screen w-full">
-      <div className="w-full hidden md:inline-block">
+    <div className="flex h-screen overflow-hidden">
+      <div className="w-1/2 hidden md:block">
         <img
           className="h-full w-full object-cover"
-          src="https://raw.githubusercontent.com/prebuiltui/prebuiltui/main/assets/login/leftSideImage.png"
+          src="https://i.pinimg.com/1200x/8c/e2/71/8ce271ecc9535a6c0726ae8ce93c59f4.jpg"
           alt="leftSideImage"
         />
       </div>
 
-      <div className="w-full flex flex-col items-center justify-center">
+      <div className="w-full md:w-1/2 flex flex-col items-center justify-center px-6 py-4 overflow-y-auto">
         <form
-          className="md:w-96 w-80 flex flex-col items-center justify-center"
+          className="w-full max-w-sm flex flex-col items-center justify-center space-y-4"
           onSubmit={onSubmit}
         >
           <h2 className="text-4xl text-gray-900 font-medium">Sign up</h2>
@@ -214,4 +214,3 @@ const Signup = () => {
 };
 
 export default Signup;
-

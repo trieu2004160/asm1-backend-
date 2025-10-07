@@ -6,6 +6,7 @@ import { Navigation } from "@/components/Navigation";
 import { ProductCard, Product } from "@/components/ProductCard";
 import { ProductForm } from "@/components/ProductForm";
 import { Footer } from "@/components/Footer";
+import { Pagination } from "@/components/Pagination";
 import { productsApi, ApiProduct, authApi, AuthUser } from "@/lib/api";
 import { AuthDialog } from "@/components/AuthDialog";
 import heroFashion from "@/assets/hero-fashion.jpg";
@@ -17,6 +18,10 @@ const Index = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [user, setUser] = useState<AuthUser | null>(authApi.getCurrentUser());
   const [showAuth, setShowAuth] = useState(false);
+
+  // Pagination state for "Tất cả sản phẩm" section
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(8);
   useEffect(() => {
     const loadProducts = async () => {
       try {
@@ -465,7 +470,7 @@ const Index = () => {
               <div>
                 <div className="flex items-center justify-between mb-8">
                   <h3 className="text-2xl md:text-3xl font-bold text-foreground">
-                    👕 Áo Polo
+                    Áo Polo
                   </h3>
                   <Button
                     variant="outline"
@@ -500,7 +505,7 @@ const Index = () => {
               <div>
                 <div className="flex items-center justify-between mb-8">
                   <h3 className="text-2xl md:text-3xl font-bold text-foreground">
-                    👖 Quần Jean
+                    Quần Jean
                   </h3>
                   <Button
                     variant="outline"
@@ -535,7 +540,7 @@ const Index = () => {
               <div>
                 <div className="flex items-center justify-between mb-8">
                   <h3 className="text-2xl md:text-3xl font-bold text-foreground">
-                    👔 Áo Sơ Mi
+                    Áo Sơ Mi
                   </h3>
                   <Button
                     variant="outline"
@@ -570,7 +575,7 @@ const Index = () => {
               <div>
                 <div className="flex items-center justify-between mb-8">
                   <h3 className="text-2xl md:text-3xl font-bold text-foreground">
-                    👕 Áo Thun
+                    Áo Thun
                   </h3>
                   <Button
                     variant="outline"
@@ -602,38 +607,61 @@ const Index = () => {
               </div>
 
               {/* Fallback: Tất cả sản phẩm khác */}
-              {filteredProducts.length > 0 && (
-                <div>
-                  <div className="flex items-center justify-between mb-8">
-                    <h3 className="text-2xl md:text-3xl font-bold text-foreground">
-                      🛍️ Tất cả sản phẩm
-                    </h3>
-                    <Button
-                      variant="outline"
-                      className="text-sm font-medium hover:bg-gray-900 hover:text-white border-gray-600"
-                    >
-                      Xem tất cả →
-                    </Button>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {filteredProducts.slice(0, 8).map((product, index) => (
-                      <div
-                        key={product.id}
-                        className="animate-fade-up transform hover:scale-[1.02] transition-all duration-300"
-                        style={{ animationDelay: `${index * 50}ms` }}
-                      >
-                        <ProductCard
-                          product={product}
-                          onEdit={handleEditProduct}
-                          onDelete={handleDeleteProduct}
-                          onView={handleViewProduct}
-                          canManage={!!user}
-                        />
+              {filteredProducts.length > 0 &&
+                (() => {
+                  // Pagination logic for "Tất cả sản phẩm" section
+                  const startIndex = (currentPage - 1) * itemsPerPage;
+                  const endIndex = startIndex + itemsPerPage;
+                  const paginatedProducts = filteredProducts.slice(
+                    startIndex,
+                    endIndex
+                  );
+
+                  return (
+                    <div>
+                      <div className="flex items-center justify-between mb-8">
+                        <h3 className="text-2xl md:text-3xl font-bold text-foreground">
+                          🛍️ Tất cả sản phẩm
+                        </h3>
+                        <Button
+                          variant="outline"
+                          className="text-sm font-medium hover:bg-gray-900 hover:text-white border-gray-600"
+                        >
+                          Xem tất cả →
+                        </Button>
                       </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {paginatedProducts.map((product, index) => (
+                          <div
+                            key={product.id}
+                            className="animate-fade-up transform hover:scale-[1.02] transition-all duration-300"
+                            style={{ animationDelay: `${index * 50}ms` }}
+                          >
+                            <ProductCard
+                              product={product}
+                              onEdit={handleEditProduct}
+                              onDelete={handleDeleteProduct}
+                              onView={handleViewProduct}
+                              canManage={!!user}
+                            />
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Pagination component */}
+                      <Pagination
+                        currentPage={currentPage}
+                        totalItems={filteredProducts.length}
+                        itemsPerPage={itemsPerPage}
+                        onPageChange={setCurrentPage}
+                        onItemsPerPageChange={(newItemsPerPage) => {
+                          setItemsPerPage(newItemsPerPage);
+                          setCurrentPage(1); // Reset to first page when changing items per page
+                        }}
+                      />
+                    </div>
+                  );
+                })()}
             </div>
           )}
         </div>
