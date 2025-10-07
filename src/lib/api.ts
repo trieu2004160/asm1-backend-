@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-	baseURL: import.meta.env.VITE_API_URL || "http://localhost:4000",
+	baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:4000/api",
 });
 
 // Attach JWT from localStorage if present
@@ -29,23 +29,23 @@ export interface ApiProduct {
 
 export const productsApi = {
 	list: async (): Promise<ApiProduct[]> => {
-		const { data } = await api.get("/api/products");
+		const { data } = await api.get("/products");
 		return data;
 	},
 	get: async (id: string): Promise<ApiProduct> => {
-		const { data } = await api.get(`/api/products/${id}`);
+		const { data } = await api.get(`/products/${id}`);
 		return data;
 	},
 	create: async (payload: Omit<ApiProduct, "id">): Promise<ApiProduct> => {
-		const { data } = await api.post("/api/products", payload);
+		const { data } = await api.post("/products", payload);
 		return data;
 	},
 	update: async (id: string | number, payload: Partial<Omit<ApiProduct, "id">>): Promise<ApiProduct> => {
-		const { data } = await api.put(`/api/products/${id}`, payload);
+		const { data } = await api.put(`/products/${id}`, payload);
 		return data;
 	},
 	remove: async (id: string | number): Promise<void> => {
-		await api.delete(`/api/products/${id}`);
+		await api.delete(`/products/${id}`);
 	},
 };
 
@@ -61,15 +61,15 @@ export interface AuthResponse {
 
 export const authApi = {
     register: async (email: string, password: string): Promise<AuthResponse> => {
-        const { data } = await api.post("/api/auth/register", { email, password });
+        const { data } = await api.post("/auth/register", { email, password });
         return data;
     },
     login: async (email: string, password: string): Promise<AuthResponse> => {
-        const { data } = await api.post("/api/auth/login", { email, password });
+        const { data } = await api.post("/auth/login", { email, password });
         return data;
     },
     googleLogin: async (credential: string): Promise<AuthResponse> => {
-        const { data } = await api.post("/api/auth/google", { credential });
+        const { data } = await api.post("/auth/google", { credential });
         return data;
     },
     logout: async (): Promise<void> => {

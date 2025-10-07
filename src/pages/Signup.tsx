@@ -1,7 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { authApi } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
+import {
+  loadGoogleScript,
+  initializeGoogleSignIn,
+  GoogleCredentialResponse,
+} from "@/lib/google-auth";
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -31,6 +36,70 @@ const Signup = () => {
     }
   };
 
+  const handleGoogleSuccess = useCallback(
+    async (response: GoogleCredentialResponse) => {
+      try {
+        setLoading(true);
+        const res = await authApi.googleLogin(response.credential);
+        authApi.persistSession(res);
+        toast({ title: "Đăng ký Google thành công" });
+        navigate("/");
+      } catch (error: unknown) {
+        const e = error as { response?: { data?: { message?: string } } };
+        toast({
+          title: "Đăng ký Google thất bại",
+          description: e?.response?.data?.message || "Có lỗi xảy ra",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    },
+    [navigate, toast]
+  );
+
+  const handleGoogleSignIn = async () => {
+    try {
+      const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+      if (!clientId) {
+        toast({
+          title: "Lỗi cấu hình",
+          description: "Google Client ID chưa được cấu hình",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      await loadGoogleScript();
+      initializeGoogleSignIn(clientId, handleGoogleSuccess);
+
+      // Trigger Google Sign-In popup
+      if (window.google) {
+        window.google.accounts.id.prompt();
+      }
+    } catch (error) {
+      toast({
+        title: "Lỗi đăng ký Google",
+        description: "Không thể tải Google Sign-In",
+        variant: "destructive",
+      });
+    }
+  };
+
+  useEffect(() => {
+    // Load Google Script on component mount
+    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+    if (clientId) {
+      loadGoogleScript()
+        .then(() => {
+          initializeGoogleSignIn(clientId, handleGoogleSuccess);
+        })
+        .catch(() => {
+          console.error("Failed to load Google Sign-In");
+        });
+    }
+  }, [handleGoogleSuccess]);
+
   return (
     <div className="flex min-h-screen w-full">
       <div className="w-full hidden md:inline-block">
@@ -53,13 +122,18 @@ const Signup = () => {
 
           <button
             type="button"
-            className="w-full mt-8 bg-gray-500/10 flex items-center justify-center h-12 rounded-full hover:bg-gray-500/20 transition-colors"
+            onClick={handleGoogleSignIn}
+            className="w-full mt-8 bg-gray-500/10 flex items-center justify-center h-12 rounded-full hover:bg-gray-500/20 transition-colors disabled:opacity-50"
             disabled={loading}
           >
             <img
               src="https://raw.githubusercontent.com/prebuiltui/prebuiltui/main/assets/login/googleLogo.svg"
               alt="googleLogo"
+              className="mr-2"
             />
+            <span className="text-gray-700 text-sm font-medium">
+              {loading ? "Đang đăng ký..." : "Tiếp tục với Google"}
+            </span>
           </button>
 
           <div className="flex items-center gap-4 w-full my-5">
