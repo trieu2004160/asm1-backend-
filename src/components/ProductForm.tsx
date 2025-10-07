@@ -5,7 +5,13 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Product } from "./ProductCard";
 
 interface ProductFormProps {
@@ -15,7 +21,12 @@ interface ProductFormProps {
   isOpen: boolean;
 }
 
-export function ProductForm({ product, onSave, onCancel, isOpen }: ProductFormProps) {
+export function ProductForm({
+  product,
+  onSave,
+  onCancel,
+  isOpen,
+}: ProductFormProps) {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -78,7 +89,7 @@ export function ProductForm({ product, onSave, onCancel, isOpen }: ProductFormPr
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (validateForm()) {
       onSave({
         ...formData,
@@ -110,11 +121,15 @@ export function ProductForm({ product, onSave, onCancel, isOpen }: ProductFormPr
               <Input
                 id="name"
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
                 placeholder="Nhập tên sản phẩm"
                 className={errors.name ? "border-destructive" : ""}
               />
-              {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
+              {errors.name && (
+                <p className="text-sm text-destructive">{errors.name}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -122,21 +137,29 @@ export function ProductForm({ product, onSave, onCancel, isOpen }: ProductFormPr
               <Textarea
                 id="description"
                 value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, description: e.target.value })
+                }
                 placeholder="Nhập mô tả sản phẩm"
                 rows={3}
                 className={errors.description ? "border-destructive" : ""}
               />
-              {errors.description && <p className="text-sm text-destructive">{errors.description}</p>}
+              {errors.description && (
+                <p className="text-sm text-destructive">{errors.description}</p>
+              )}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="category">Danh mục *</Label>
               <Select
                 value={formData.category}
-                onValueChange={(value) => setFormData({ ...formData, category: value })}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, category: value })
+                }
               >
-                <SelectTrigger className={errors.category ? "border-destructive" : ""}>
+                <SelectTrigger
+                  className={errors.category ? "border-destructive" : ""}
+                >
                   <SelectValue placeholder="Chọn danh mục sản phẩm" />
                 </SelectTrigger>
                 <SelectContent>
@@ -147,7 +170,9 @@ export function ProductForm({ product, onSave, onCancel, isOpen }: ProductFormPr
                   ))}
                 </SelectContent>
               </Select>
-              {errors.category && <p className="text-sm text-destructive">{errors.category}</p>}
+              {errors.category && (
+                <p className="text-sm text-destructive">{errors.category}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -156,13 +181,17 @@ export function ProductForm({ product, onSave, onCancel, isOpen }: ProductFormPr
                 id="price"
                 type="number"
                 value={formData.price}
-                onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
+                onChange={(e) =>
+                  setFormData({ ...formData, price: Number(e.target.value) })
+                }
                 placeholder="0"
                 min="0"
                 step="1000"
                 className={errors.price ? "border-destructive" : ""}
               />
-              {errors.price && <p className="text-sm text-destructive">{errors.price}</p>}
+              {errors.price && (
+                <p className="text-sm text-destructive">{errors.price}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -173,7 +202,9 @@ export function ProductForm({ product, onSave, onCancel, isOpen }: ProductFormPr
                   <Input
                     id="image"
                     value={formData.image}
-                    onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, image: e.target.value })
+                    }
                     placeholder="https://example.com/image.jpg"
                     className="pl-10"
                   />
@@ -187,7 +218,7 @@ export function ProductForm({ product, onSave, onCancel, isOpen }: ProductFormPr
                     className="w-20 h-20 object-cover rounded border"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
-                      target.style.display = 'none';
+                      target.style.display = "none";
                     }}
                   />
                 </div>
@@ -203,10 +234,7 @@ export function ProductForm({ product, onSave, onCancel, isOpen }: ProductFormPr
               >
                 Hủy
               </Button>
-              <Button
-                type="submit"
-                className="flex-1 btn-fashion"
-              >
+              <Button type="submit" className="flex-1 btn-fashion">
                 {product ? "Cập nhật" : "Thêm"}
               </Button>
             </div>

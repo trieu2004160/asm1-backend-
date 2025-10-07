@@ -464,14 +464,19 @@ const Index = () => {
               {/* Category: Áo Polo */}
               <div>
                 <div className="flex items-center justify-between mb-8">
-                  <h3 className="text-2xl md:text-3xl font-bold text-foreground">👕 Áo Polo</h3>
-                  <Button variant="outline" className="text-sm font-medium hover:bg-gray-900 hover:text-white border-gray-600">
+                  <h3 className="text-2xl md:text-3xl font-bold text-foreground">
+                    👕 Áo Polo
+                  </h3>
+                  <Button
+                    variant="outline"
+                    className="text-sm font-medium hover:bg-gray-900 hover:text-white border-gray-600"
+                  >
                     Xem tất cả →
                   </Button>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                   {filteredProducts
-                    .filter(product => product.category === 'polo')
+                    .filter((product) => product.category === "polo")
                     .slice(0, 4)
                     .map((product, index) => (
                       <div
@@ -494,14 +499,19 @@ const Index = () => {
               {/* Category: Quần Jean */}
               <div>
                 <div className="flex items-center justify-between mb-8">
-                  <h3 className="text-2xl md:text-3xl font-bold text-foreground">👖 Quần Jean</h3>
-                  <Button variant="outline" className="text-sm font-medium hover:bg-gray-900 hover:text-white border-gray-600">
+                  <h3 className="text-2xl md:text-3xl font-bold text-foreground">
+                    👖 Quần Jean
+                  </h3>
+                  <Button
+                    variant="outline"
+                    className="text-sm font-medium hover:bg-gray-900 hover:text-white border-gray-600"
+                  >
                     Xem tất cả →
                   </Button>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                   {filteredProducts
-                    .filter(product => product.category === 'jean')
+                    .filter((product) => product.category === "jean")
                     .slice(0, 4)
                     .map((product, index) => (
                       <div
@@ -524,14 +534,19 @@ const Index = () => {
               {/* Category: Áo Sơ Mi */}
               <div>
                 <div className="flex items-center justify-between mb-8">
-                  <h3 className="text-2xl md:text-3xl font-bold text-foreground">👔 Áo Sơ Mi</h3>
-                  <Button variant="outline" className="text-sm font-medium hover:bg-gray-900 hover:text-white border-gray-600">
+                  <h3 className="text-2xl md:text-3xl font-bold text-foreground">
+                    👔 Áo Sơ Mi
+                  </h3>
+                  <Button
+                    variant="outline"
+                    className="text-sm font-medium hover:bg-gray-900 hover:text-white border-gray-600"
+                  >
                     Xem tất cả →
                   </Button>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                   {filteredProducts
-                    .filter(product => product.category === 'somi')
+                    .filter((product) => product.category === "somi")
                     .slice(0, 4)
                     .map((product, index) => (
                       <div
@@ -554,14 +569,19 @@ const Index = () => {
               {/* Category: Áo Thun */}
               <div>
                 <div className="flex items-center justify-between mb-8">
-                  <h3 className="text-2xl md:text-3xl font-bold text-foreground">👕 Áo Thun</h3>
-                  <Button variant="outline" className="text-sm font-medium hover:bg-gray-900 hover:text-white border-gray-600">
+                  <h3 className="text-2xl md:text-3xl font-bold text-foreground">
+                    👕 Áo Thun
+                  </h3>
+                  <Button
+                    variant="outline"
+                    className="text-sm font-medium hover:bg-gray-900 hover:text-white border-gray-600"
+                  >
                     Xem tất cả →
                   </Button>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                   {filteredProducts
-                    .filter(product => product.category === 'thun')
+                    .filter((product) => product.category === "thun")
                     .slice(0, 4)
                     .map((product, index) => (
                       <div
@@ -585,8 +605,13 @@ const Index = () => {
               {filteredProducts.length > 0 && (
                 <div>
                   <div className="flex items-center justify-between mb-8">
-                    <h3 className="text-2xl md:text-3xl font-bold text-foreground">🛍️ Tất cả sản phẩm</h3>
-                    <Button variant="outline" className="text-sm font-medium hover:bg-gray-900 hover:text-white border-gray-600">
+                    <h3 className="text-2xl md:text-3xl font-bold text-foreground">
+                      🛍️ Tất cả sản phẩm
+                    </h3>
+                    <Button
+                      variant="outline"
+                      className="text-sm font-medium hover:bg-gray-900 hover:text-white border-gray-600"
+                    >
                       Xem tất cả →
                     </Button>
                   </div>
