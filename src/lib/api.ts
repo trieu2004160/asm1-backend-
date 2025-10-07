@@ -25,6 +25,7 @@ export interface ApiProduct {
 	description: string;
 	price: number;
 	image?: string;
+	category?: string;
 }
 
 export const productsApi = {

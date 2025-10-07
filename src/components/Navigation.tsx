@@ -28,14 +28,16 @@ export function Navigation({
         <div className="flex items-center justify-between gap-4">
           {/* Logo & Brand */}
           <div className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-gradient-hero rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 bg-gradient-to-br from-gray-800 to-black rounded-lg flex items-center justify-center">
               <Store className="h-6 w-6 text-white" />
             </div>
             <div>
               <h1 className="text-xl font-bold text-foreground">
                 FashionStore
               </h1>
-              <p className="text-xs text-muted-foreground">Premium Clothing</p>
+              <p className="text-xs text-muted-foreground text-[#CDAD5D]">
+                Premium Clothing
+              </p>
             </div>
           </div>
 
@@ -57,7 +59,10 @@ export function Navigation({
                 <span className="text-sm text-muted-foreground hidden sm:inline">
                   {user.email}
                 </span>
-                <Button onClick={onAddProduct} className="btn-fashion">
+                <Button
+                  onClick={onAddProduct}
+                  className="bg-gray-900 border-gray-700 text-white hover:bg-gray-800 hover:border-gray-600 font-semibold px-6 py-3 rounded-lg transition-all"
+                >
                   <Plus className="h-4 w-4 mr-2" />
                   Thêm sản phẩm
                 </Button>

@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Product } from "./ProductCard";
 
 interface ProductFormProps {
@@ -20,7 +21,17 @@ export function ProductForm({ product, onSave, onCancel, isOpen }: ProductFormPr
     description: "",
     price: 0,
     image: "",
+    category: "",
   });
+
+  // Define product categories
+  const categories = [
+    { value: "polo", label: "👕 Áo Polo" },
+    { value: "jean", label: "👖 Quần Jean" },
+    { value: "somi", label: "👔 Áo Sơ Mi" },
+    { value: "thun", label: "👕 Áo Thun" },
+    { value: "other", label: "🛍️ Khác" },
+  ];
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -31,6 +42,7 @@ export function ProductForm({ product, onSave, onCancel, isOpen }: ProductFormPr
         description: product.description,
         price: product.price,
         image: product.image || "",
+        category: product.category || "",
       });
     } else {
       setFormData({
@@ -38,6 +50,7 @@ export function ProductForm({ product, onSave, onCancel, isOpen }: ProductFormPr
         description: "",
         price: 0,
         image: "",
+        category: "",
       });
     }
     setErrors({});
@@ -54,6 +67,9 @@ export function ProductForm({ product, onSave, onCancel, isOpen }: ProductFormPr
     }
     if (formData.price <= 0) {
       newErrors.price = "Giá phải lớn hơn 0";
+    }
+    if (!formData.category.trim()) {
+      newErrors.category = "Danh mục là bắt buộc";
     }
 
     setErrors(newErrors);
@@ -112,6 +128,26 @@ export function ProductForm({ product, onSave, onCancel, isOpen }: ProductFormPr
                 className={errors.description ? "border-destructive" : ""}
               />
               {errors.description && <p className="text-sm text-destructive">{errors.description}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="category">Danh mục *</Label>
+              <Select
+                value={formData.category}
+                onValueChange={(value) => setFormData({ ...formData, category: value })}
+              >
+                <SelectTrigger className={errors.category ? "border-destructive" : ""}>
+                  <SelectValue placeholder="Chọn danh mục sản phẩm" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((category) => (
+                    <SelectItem key={category.value} value={category.value}>
+                      {category.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.category && <p className="text-sm text-destructive">{errors.category}</p>}
             </div>
 
             <div className="space-y-2">

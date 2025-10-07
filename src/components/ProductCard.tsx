@@ -1,4 +1,5 @@
 import { Edit, Trash2, Eye } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -8,6 +9,7 @@ export interface Product {
   description: string;
   price: number;
   image?: string;
+  category?: string;
 }
 
 interface ProductCardProps {
@@ -25,11 +27,17 @@ export function ProductCard({
   onView,
   canManage,
 }: ProductCardProps) {
+  const navigate = useNavigate();
+
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("vi-VN", {
       style: "currency",
       currency: "VND",
     }).format(price);
+  };
+
+  const handleViewDetails = () => {
+    navigate(`/product/${product.id}`);
   };
 
   return (
@@ -57,7 +65,7 @@ export function ProductCard({
           <Button
             size="sm"
             variant="secondary"
-            onClick={() => onView(product)}
+            onClick={handleViewDetails}
             className="bg-white/90 text-black hover:bg-white"
           >
             <Eye className="h-4 w-4" />
@@ -99,7 +107,7 @@ export function ProductCard({
           <Button
             size="sm"
             className="btn-fashion text-sm"
-            onClick={() => onView(product)}
+            onClick={handleViewDetails}
           >
             Xem chi tiết
           </Button>
