@@ -222,8 +222,11 @@ const Index = () => {
 
   const handleAuthRequired = () => {
     // Save current location for redirect after login
-    sessionStorage.setItem('redirectAfterLogin', window.location.pathname + window.location.search);
-    navigate('/login');
+    sessionStorage.setItem(
+      "redirectAfterLogin",
+      window.location.pathname + window.location.search
+    );
+    navigate("/login");
   };
 
   return (

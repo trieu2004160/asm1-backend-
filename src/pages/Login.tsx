@@ -23,11 +23,11 @@ const Login = () => {
       const res = await authApi.login(email.trim(), password);
       authApi.persistSession(res);
       toast({ title: "Đăng nhập thành công" });
-      
+
       // Redirect to intended destination or home
-      const redirectPath = sessionStorage.getItem('redirectAfterLogin');
+      const redirectPath = sessionStorage.getItem("redirectAfterLogin");
       if (redirectPath) {
-        sessionStorage.removeItem('redirectAfterLogin');
+        sessionStorage.removeItem("redirectAfterLogin");
         navigate(redirectPath);
       } else {
         navigate("/");
@@ -52,11 +52,11 @@ const Login = () => {
         const res = await authApi.googleLogin(response.credential);
         authApi.persistSession(res);
         toast({ title: "Đăng nhập Google thành công" });
-        
+
         // Redirect to intended destination or home
-        const redirectPath = sessionStorage.getItem('redirectAfterLogin');
+        const redirectPath = sessionStorage.getItem("redirectAfterLogin");
         if (redirectPath) {
-          sessionStorage.removeItem('redirectAfterLogin');
+          sessionStorage.removeItem("redirectAfterLogin");
           navigate(redirectPath);
         } else {
           navigate("/");
