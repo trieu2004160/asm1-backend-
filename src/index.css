@@ -6,14 +6,18 @@
 
 @layer base {
   /* Ngăn tất cả cursor nhấp nháy và animation không mong muốn */
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     outline: none !important;
     -webkit-tap-highlight-color: transparent !important;
     caret-color: transparent !important;
   }
 
   /* Loại bỏ focus outline và text cursor nháy */
-  *:focus, *:active, *:hover {
+  *:focus,
+  *:active,
+  *:hover {
     outline: none !important;
     box-shadow: none !important;
     caret-color: transparent !important;
@@ -45,7 +49,15 @@
   }
 
   /* Cho phép text selection trên text elements */
-  p, span, h1, h2, h3, h4, h5, h6, div {
+  p,
+  span,
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  div {
     -webkit-user-select: text !important;
     -moz-user-select: text !important;
     -ms-user-select: text !important;
@@ -96,18 +108,27 @@
 
   /* Tắt cursor blink animation */
   @keyframes blink {
-    0%, 50% { opacity: 1; }
-    51%, 100% { opacity: 1; }
+    0%,
+    50% {
+      opacity: 1;
+    }
+    51%,
+    100% {
+      opacity: 1;
+    }
   }
 
   /* Override browser default cursor blink */
-  input, textarea, [contenteditable] {
+  input,
+  textarea,
+  [contenteditable] {
     animation: none !important;
     -webkit-animation: none !important;
   }
 
   /* Đặc biệt ngăn cursor trên body và html */
-  html, body {
+  html,
+  body {
     caret-color: transparent !important;
   }
 
@@ -361,7 +382,10 @@ iframe[src*="accounts.google.com"],
 
 /* Đảm bảo không có cursor animation nào cả */
 @keyframes none {
-  0%, 100% { opacity: 1; }
+  0%,
+  100% {
+    opacity: 1;
+  }
 }
 
 * {

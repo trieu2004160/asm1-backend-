@@ -64,17 +64,17 @@ export function CategoryGrid({
 }: CategoryGridProps) {
   const navigate = useNavigate();
   const [currentIndex, setCurrentIndex] = useState(0);
-  
+
   // Responsive items to show
   const getItemsToShow = () => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       if (window.innerWidth < 640) return 1; // mobile
       if (window.innerWidth < 1024) return 2; // tablet
       return 4; // desktop
     }
     return 4;
   };
-  
+
   const [itemsToShow, setItemsToShow] = useState(getItemsToShow);
 
   useEffect(() => {
@@ -87,8 +87,8 @@ export function CategoryGrid({
       }
     };
 
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, [currentIndex]);
 
   const handleCategoryClick = (category: Category) => {
@@ -103,13 +103,13 @@ export function CategoryGrid({
   };
 
   const nextSlide = () => {
-    setCurrentIndex((prev) => 
+    setCurrentIndex((prev) =>
       prev + itemsToShow >= categories.length ? 0 : prev + 1
     );
   };
 
   const prevSlide = () => {
-    setCurrentIndex((prev) => 
+    setCurrentIndex((prev) =>
       prev === 0 ? Math.max(0, categories.length - itemsToShow) : prev - 1
     );
   };
@@ -177,60 +177,62 @@ export function CategoryGrid({
       </div>
 
       <div className="relative overflow-hidden">
-        <div 
+        <div
           className="flex transition-transform duration-500 ease-in-out gap-6"
-          style={{ transform: `translateX(-${currentIndex * (100 / itemsToShow)}%)` }}
+          style={{
+            transform: `translateX(-${currentIndex * (100 / itemsToShow)}%)`,
+          }}
         >
-        {categories.map((category, index) => {
-          const isActive = selectedCategory === category.id;
-          return (
-            <div
-              key={category.id}
-              onClick={() => handleCategoryClick(category)}
-              className={`group relative overflow-hidden rounded-2xl cursor-pointer transform transition-all duration-300 hover:scale-105 hover:shadow-xl flex-shrink-0 ${
-                isActive ? "scale-105 shadow-2xl" : ""
-              }`}
-              style={{
-                aspectRatio: "4/5",
-                animationDelay: `${index * 100}ms`,
-                width: `calc(${100 / itemsToShow}% - 1.5rem)`,
-              }}
-            >
-              {/* Background Image */}
+          {categories.map((category, index) => {
+            const isActive = selectedCategory === category.id;
+            return (
               <div
-                className="absolute inset-0 bg-cover bg-center bg-gray-200 transition-transform duration-500 group-hover:scale-110"
-                style={{ backgroundImage: `url(${category.image})` }}
-              />
+                key={category.id}
+                onClick={() => handleCategoryClick(category)}
+                className={`group relative overflow-hidden rounded-2xl cursor-pointer transform transition-all duration-300 hover:scale-105 hover:shadow-xl flex-shrink-0 ${
+                  isActive ? "scale-105 shadow-2xl" : ""
+                }`}
+                style={{
+                  aspectRatio: "4/5",
+                  animationDelay: `${index * 100}ms`,
+                  width: `calc(${100 / itemsToShow}% - 1.5rem)`,
+                }}
+              >
+                {/* Background Image */}
+                <div
+                  className="absolute inset-0 bg-cover bg-center bg-gray-200 transition-transform duration-500 group-hover:scale-110"
+                  style={{ backgroundImage: `url(${category.image})` }}
+                />
 
-              {/* Overlay */}
-              <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors duration-300" />
+                {/* Overlay */}
+                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors duration-300" />
 
-              {/* Content */}
-              <div className="absolute bottom-0 left-0 right-0 p-6">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-white font-semibold text-lg drop-shadow-lg">
-                    {category.name}
-                  </h3>
-                  <div className="w-10 h-10 bg-white/90 rounded-full flex items-center justify-center group-hover:bg-white transition-colors duration-300">
-                    <svg
-                      className="w-5 h-5 text-black"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 5l7 7-7 7"
-                      />
-                    </svg>
+                {/* Content */}
+                <div className="absolute bottom-0 left-0 right-0 p-6">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-white font-semibold text-lg drop-shadow-lg">
+                      {category.name}
+                    </h3>
+                    <div className="w-10 h-10 bg-white/90 rounded-full flex items-center justify-center group-hover:bg-white transition-colors duration-300">
+                      <svg
+                        className="w-5 h-5 text-black"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 5l7 7-7 7"
+                        />
+                      </svg>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
         </div>
       </div>
     </div>
