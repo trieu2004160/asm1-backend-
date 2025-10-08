@@ -1,15 +1,30 @@
 import axios from "axios";
 
-// Resolve API base URL with sensible fallbacks for deployed environments
-const envBaseUrl =
-	import.meta.env.VITE_API_BASE_URL ||
-	(import.meta.env.VITE_API_URL
-		? `${import.meta.env.VITE_API_URL.replace(/\/$/, "")}/api`
-		: undefined);
-const defaultBaseUrl = typeof window !== "undefined" ? `${window.location.origin}/api` : "/api";
+// Smart API base URL resolution
+const getApiBaseUrl = () => {
+  // 1. Use explicit env var if set
+  if (import.meta.env.VITE_API_BASE_URL) {
+    return import.meta.env.VITE_API_BASE_URL;
+  }
+  
+  // 2. Development mode detection
+  if (import.meta.env.DEV) {
+    return "http://localhost:4000/api";
+  }
+  
+  // 3. Production: try to use same origin
+  if (typeof window !== "undefined") {
+    const origin = window.location.origin;
+    // If deployed on same server as backend
+    return `${origin}/api`;
+  }
+  
+  // 4. Fallback
+  return "/api";
+};
 
 const api = axios.create({
-	baseURL: envBaseUrl || defaultBaseUrl,
+  baseURL: getApiBaseUrl(),
 });
 
 // Attach JWT from localStorage if present
