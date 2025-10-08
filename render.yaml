@@ -3,7 +3,7 @@ services:
     name: thread-cart-frontend
     env: static
     buildCommand: npm run build
-    staticPublishPath: ./dist
+    staticPublishPath: dist
     envVars:
       - key: VITE_GOOGLE_CLIENT_ID
         value: 207594028823-5kc0j2nt6la0ni6jv56i30jqbrikn3rb.apps.googleusercontent.com
