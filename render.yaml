@@ -1,8 +1,8 @@
+# Render Blueprint for Static Site
 services:
   - type: web
     name: thread-cart-frontend
-    env: static
-    buildCommand: npm run build
+    buildCommand: npm install && npm run build
     staticPublishPath: dist
     envVars:
       - key: VITE_GOOGLE_CLIENT_ID
