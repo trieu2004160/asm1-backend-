@@ -7,6 +7,7 @@ import { ProductCard, Product } from "@/components/ProductCard";
 import { ProductForm } from "@/components/ProductForm";
 import { Footer } from "@/components/Footer";
 import { Pagination } from "@/components/Pagination";
+import { CategoryGrid } from "@/components/CategoryGrid";
 import { productsApi, ApiProduct, authApi, AuthUser } from "@/lib/api";
 import { AuthDialog } from "@/components/AuthDialog";
 import heroFashion from "@/assets/hero-fashion.jpg";
@@ -22,6 +23,9 @@ const Index = () => {
   // Pagination state for "Tất cả sản phẩm" section
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(8);
+
+  // Category filtering
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
   useEffect(() => {
     const loadProducts = async () => {
       try {
@@ -50,19 +54,49 @@ const Index = () => {
     loadProducts();
   }, [toast]);
 
+  // Check URL params for category filter
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const category = urlParams.get("category");
+    if (category) {
+      setSelectedCategory(category);
+      // Scroll to products section
+      setTimeout(() => {
+        const productsSection = document.getElementById("products");
+        if (productsSection) {
+          productsSection.scrollIntoView({ behavior: "smooth" });
+        }
+      }, 100);
+    }
+  }, []);
+
   const [searchTerm, setSearchTerm] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
-  // Filter products based on search term
+  // Filter products based on search term and category
   const filteredProducts = useMemo(() => {
-    if (!searchTerm) return products;
-    return products.filter(
-      (product) =>
-        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.description.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [products, searchTerm]);
+    let filtered = products;
+
+    // Filter by category
+    if (selectedCategory && selectedCategory !== "all") {
+      filtered = filtered.filter(
+        (product) =>
+          product.category?.toLowerCase() === selectedCategory.toLowerCase()
+      );
+    }
+
+    // Filter by search term
+    if (searchTerm) {
+      filtered = filtered.filter(
+        (product) =>
+          product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          product.description.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    return filtered;
+  }, [products, searchTerm, selectedCategory]);
 
   const handleAddProduct = () => {
     if (!user) {
@@ -277,6 +311,16 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Category Grid Section */}
+      <section className="py-16 bg-gradient-to-b from-gray-50 to-white">
+        <div className="container mx-auto px-4">
+          <CategoryGrid
+            selectedCategory={selectedCategory}
+            onCategoryChange={setSelectedCategory}
+          />
+        </div>
+      </section>
+
       {/* Features Section */}
       <section className="py-16 bg-muted/30">
         <div className="container mx-auto px-4">
@@ -306,7 +350,7 @@ const Index = () => {
               <h3 className="text-xl font-semibold mb-2 text-black">
                 Chất Lượng Đảm Bảo
               </h3>
-              <p className="text-amber-400">
+              <p className="text-amber-400 text-sm">
                 Sản phẩm chính hãng, kiểm định kỹ lưỡng
               </p>
             </div>
@@ -329,7 +373,7 @@ const Index = () => {
               <h3 className="text-xl font-semibold mb-2 text-black">
                 Giao Hàng Nhanh
               </h3>
-              <p className="text-amber-400">
+              <p className="text-amber-400 text-sm">
                 Miễn phí vận chuyển cho đơn hàng từ 500K
               </p>
             </div>
@@ -352,56 +396,10 @@ const Index = () => {
               <h3 className="text-xl font-semibold mb-2 text-black">
                 Đổi Trả Dễ Dàng
               </h3>
-              <p className="text-amber-400">
+              <p className="text-amber-400 text-sm">
                 Chính sách đổi trả trong vòng 30 ngày
               </p>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Categories Section */}
-      <section className="py-16">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Danh Mục Sản Phẩm</h2>
-            <p className="text-muted-foreground">
-              Khám phá các bộ sưu tập đa dạng
-            </p>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              {
-                name: "Áo Thun",
-                icon: "👕",
-                color: "from-blue-500/10 to-blue-600/10",
-              },
-              {
-                name: "Áo Sơ Mi",
-                icon: "👔",
-                color: "from-purple-500/10 to-purple-600/10",
-              },
-              {
-                name: "Quần Jean",
-                icon: "👖",
-                color: "from-green-500/10 to-green-600/10",
-              },
-              {
-                name: "Phụ Kiện",
-                icon: "🎒",
-                color: "from-orange-500/10 to-orange-600/10",
-              },
-            ].map((category, index) => (
-              <div
-                key={index}
-                className={`p-8 rounded-lg bg-gradient-to-br ${category.color} hover:shadow-lg transition-all cursor-pointer group`}
-              >
-                <div className="text-5xl mb-3 group-hover:scale-110 transition-transform">
-                  {category.icon}
-                </div>
-                <h3 className="font-semibold text-lg">{category.name}</h3>
-              </div>
-            ))}
           </div>
         </div>
       </section>

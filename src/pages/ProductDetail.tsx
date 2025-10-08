@@ -9,6 +9,8 @@ import {
   Truck,
   Shield,
   RotateCcw,
+  Heart,
+  Share2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -44,6 +46,11 @@ const ProductDetailPage = () => {
   const [activeTab, setActiveTab] = useState<
     "description" | "specifications" | "reviews"
   >("description");
+
+  // Product selection states
+  const [selectedColor, setSelectedColor] = useState<string>("");
+  const [selectedSize, setSelectedSize] = useState<string>("");
+  const [quantity, setQuantity] = useState<number>(1);
 
   // Mock suggested products - trong thực tế sẽ lấy từ API
   const [suggestedProducts, setSuggestedProducts] = useState<Product[]>([]);
@@ -118,11 +125,12 @@ const ProductDetailPage = () => {
             { label: "Chất liệu", value: "Cotton 100%" },
             { label: "Xuất xứ", value: "Việt Nam" },
             { label: "Size", value: "S, M, L, XL, XXL" },
-            { label: "Màu sắc", value: "Đen, Trắng, Xanh" },
+            { label: "Màu sắc", value: "Đỏ, Trắng, Xanh, Vàng, Hồng" },
           ],
           features: [
             "Chất liệu vải cao cấp, thoáng mát",
             "Thiết kế hiện đại, trẻ trung",
+            "Đa dạng màu sắc thời thrang",
             "Dễ dàng phối đồ",
             "Bền đẹp sau nhiều lần giặt",
           ],
@@ -304,11 +312,11 @@ const ProductDetailPage = () => {
         </Button>
 
         {/* Product Detail */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12 p-9">
           {/* Left Column - Images */}
           <div className="space-y-4">
             {/* Main Image */}
-            <div className="aspect-square overflow-hidden rounded-lg bg-muted border">
+            <div className="aspect-square overflow-hidden rounded-lg bg-muted border h-96">
               {displayImages[selectedImageIndex] ? (
                 <img
                   src={displayImages[selectedImageIndex]}
@@ -405,69 +413,132 @@ const ProductDetailPage = () => {
               </div>
             </div>
 
-            {/* Features */}
-            {product.features && product.features.length > 0 && (
+            {/* Product Options - Compact */}
+            <div className="space-y-4">
+              {/* Màu sắc */}
               <div>
-                <h3 className="font-semibold mb-3">Đặc điểm nổi bật</h3>
-                <ul className="space-y-2">
-                  {product.features.map((feature, idx) => (
-                    <li key={idx} className="flex items-start gap-2 text-sm">
-                      <span className="text-primary mt-1">✓</span>
-                      <span>{feature}</span>
-                    </li>
+                <h4 className="text-sm font-medium mb-2">
+                  Màu sắc{" "}
+                  {selectedColor && (
+                    <span className="text-gray-500">({selectedColor})</span>
+                  )}
+                </h4>
+                <div className="flex gap-2">
+                  {["Đỏ", "Trắng", "Xanh", "Vàng", "Hồng"].map((color) => (
+                    <button
+                      key={color}
+                      onClick={() => setSelectedColor(color)}
+                      className={`w-8 h-8 rounded-full border-2 transition-all ${
+                        selectedColor === color
+                          ? "border-black ring-2 ring-black ring-offset-1"
+                          : "border-gray-300 hover:border-gray-400"
+                      } ${
+                        color === "Đỏ"
+                          ? "bg-red-500"
+                          : color === "Trắng"
+                          ? "bg-white"
+                          : color === "Xanh"
+                          ? "bg-blue-500"
+                          : color === "Vàng"
+                          ? "bg-yellow-400"
+                          : "bg-pink-500"
+                      }`}
+                      title={color}
+                    />
                   ))}
-                </ul>
+                </div>
               </div>
-            )}
 
-            {/* Services */}
-            <div className="grid grid-cols-3 gap-4 py-4 border-t">
-              <div className="flex flex-col items-center text-center gap-2">
-                <Truck className="h-6 w-6 text-primary" />
-                <span className="text-xs text-muted-foreground">
-                  Giao hàng nhanh
-                </span>
+              {/* Kích thước */}
+              <div>
+                <h4 className="text-sm font-medium mb-2">
+                  Kích thước{" "}
+                  {selectedSize && (
+                    <span className="text-gray-500">({selectedSize})</span>
+                  )}
+                </h4>
+                <div className="flex gap-2">
+                  {["S", "M", "L", "XL", "XXL"].map((size) => (
+                    <button
+                      key={size}
+                      onClick={() => setSelectedSize(size)}
+                      className={`px-3 py-1 border text-sm rounded transition-colors ${
+                        selectedSize === size
+                          ? "border-black bg-black text-white"
+                          : "border-gray-300 hover:border-gray-400"
+                      }`}
+                    >
+                      {size}
+                    </button>
+                  ))}
+                </div>
               </div>
-              <div className="flex flex-col items-center text-center gap-2">
-                <Shield className="h-6 w-6 text-primary" />
-                <span className="text-xs text-muted-foreground">
-                  Bảo hành 12 tháng
-                </span>
-              </div>
-              <div className="flex flex-col items-center text-center gap-2">
-                <RotateCcw className="h-6 w-6 text-primary" />
-                <span className="text-xs text-muted-foreground">
-                  Đổi trả 7 ngày
-                </span>
+
+              {/* Số lượng */}
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-medium">Số lượng</h4>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    className="w-8 h-8 border border-gray-300 hover:bg-gray-50 rounded flex items-center justify-center text-lg"
+                  >
+                    -
+                  </button>
+                  <span className="w-12 text-center font-medium">
+                    {quantity}
+                  </span>
+                  <button
+                    onClick={() =>
+                      setQuantity(Math.min(product.stock || 25, quantity + 1))
+                    }
+                    className="w-8 h-8 border border-gray-300 hover:bg-gray-50 rounded flex items-center justify-center text-lg"
+                  >
+                    +
+                  </button>
+                </div>
               </div>
             </div>
 
-            {/* Action Buttons */}
-            <div className="space-y-3">
-              <Button size="lg" className="w-full">
-                <ShoppingCart className="mr-2 h-5 w-5" />
-                Thêm vào giỏ hàng
+            {/* Services */}
+
+            {/* Tổng tiền */}
+            <div className="border-t pt-4">
+              {selectedColor && selectedSize && (
+                <div className="flex justify-between items-center mb-3">
+                  <span className="text-lg font-semibold">Tổng tiền:</span>
+                  <span className="text-2xl font-bold text-red-600">
+                    {(product.price * quantity).toLocaleString("vi-VN")}đ
+                  </span>
+                </div>
+              )}
+
+              <Button
+                size="lg"
+                className="w-full bg-red-600 hover:bg-red-700 text-white"
+                disabled={!selectedColor || !selectedSize}
+                onClick={() => {
+                  if (selectedColor && selectedSize) {
+                    toast({
+                      title: "Mua ngay",
+                      description: `${product.name} - ${selectedColor}, ${selectedSize} (x${quantity})`,
+                    });
+                  } else {
+                    toast({
+                      title: "Vui lòng chọn đầy đủ",
+                      description:
+                        "Hãy chọn màu sắc và kích thước trước khi mua",
+                      variant: "destructive",
+                    });
+                  }
+                }}
+              >
+                Mua ngay
               </Button>
 
-              {user && (
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={handleEdit}
-                    className="flex-1"
-                  >
-                    <Edit className="mr-2 h-4 w-4" />
-                    Chỉnh sửa
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    onClick={handleDelete}
-                    className="flex-1"
-                  >
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Xóa
-                  </Button>
-                </div>
+              {(!selectedColor || !selectedSize) && (
+                <p className="text-sm text-gray-500 text-center mt-2">
+                  Vui lòng chọn màu sắc và kích thước
+                </p>
               )}
             </div>
           </div>
@@ -585,6 +656,72 @@ const ProductDetailPage = () => {
               ))}
             </div>
           </div>
+        )}
+      </div>
+
+      {/* Floating Action Panel */}
+      <div className="fixed top-4 right-4 z-40 flex flex-col gap-2">
+        {/* Heart/Favorite Button */}
+        <button
+          title="Thêm vào yêu thích"
+          aria-label="Thêm sản phẩm vào danh sách yêu thích"
+          className="w-12 h-12 bg-white shadow-lg rounded-full border border-gray-200 flex items-center justify-center hover:shadow-xl transition-all group"
+          onClick={() => {
+            toast({
+              title: "Đã thêm vào yêu thích",
+              description: "Sản phẩm đã được lưu vào danh sách yêu thích",
+            });
+          }}
+        >
+          <Heart className="w-5 h-5 text-gray-600 group-hover:text-red-500 group-hover:fill-red-500 transition-colors" />
+        </button>
+
+        {/* Share Button */}
+        <button
+          title="Chia sẻ sản phẩm"
+          aria-label="Chia sẻ link sản phẩm"
+          className="w-12 h-12 bg-white shadow-lg rounded-full border border-gray-200 flex items-center justify-center hover:shadow-xl transition-all group"
+          onClick={() => {
+            if (navigator.share) {
+              navigator.share({
+                title: product.name,
+                text: product.description,
+                url: window.location.href,
+              });
+            } else {
+              navigator.clipboard.writeText(window.location.href);
+              toast({
+                title: "Đã copy link",
+                description: "Link sản phẩm đã được copy vào clipboard",
+              });
+            }
+          }}
+        >
+          <Share2 className="w-5 h-5 text-gray-600 group-hover:text-blue-500 transition-colors" />
+        </button>
+
+        {/* Edit Button (only for logged-in users) */}
+        {user && (
+          <button
+            title="Chỉnh sửa sản phẩm"
+            aria-label="Chỉnh sửa thông tin sản phẩm"
+            className="w-12 h-12 bg-white shadow-lg rounded-full border border-gray-200 flex items-center justify-center hover:shadow-xl transition-all group"
+            onClick={handleEdit}
+          >
+            <Edit className="w-5 h-5 text-gray-600 group-hover:text-green-500 transition-colors" />
+          </button>
+        )}
+
+        {/* Delete Button (only for logged-in users) */}
+        {user && (
+          <button
+            title="Xóa sản phẩm"
+            aria-label="Xóa sản phẩm này"
+            className="w-12 h-12 bg-white shadow-lg rounded-full border border-gray-200 flex items-center justify-center hover:shadow-xl transition-all group"
+            onClick={handleDelete}
+          >
+            <Trash2 className="w-5 h-5 text-gray-600 group-hover:text-red-500 transition-colors" />
+          </button>
         )}
       </div>
 

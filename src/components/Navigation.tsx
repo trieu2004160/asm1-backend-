@@ -35,9 +35,7 @@ export function Navigation({
               <h1 className="text-xl font-bold text-foreground">
                 FashionStore
               </h1>
-              <p className="text-xs text-muted-foreground text-[#CDAD5D]">
-                Premium Clothing
-              </p>
+              <p className="text-xs !text-[#CDAD5D]">Premium Clothing</p>
             </div>
           </div>
 
