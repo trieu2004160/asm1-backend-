@@ -503,7 +503,8 @@ const Index = () => {
                       </div>
                     ))}
                 </div>
-              </div>              {/* Category: Quần Jean */}
+              </div>{" "}
+              {/* Category: Quần Jean */}
               <div>
                 <div className="flex items-center justify-between mb-8">
                   <h3 className="text-2xl md:text-3xl font-bold text-foreground">
@@ -539,7 +540,6 @@ const Index = () => {
                     ))}
                 </div>
               </div>
-
               {/* Category: Áo Sơ Mi */}
               <div>
                 <div className="flex items-center justify-between mb-8">
@@ -576,7 +576,6 @@ const Index = () => {
                     ))}
                 </div>
               </div>
-
               {/* Category: Áo Thun */}
               <div>
                 <div className="flex items-center justify-between mb-8">
@@ -613,7 +612,6 @@ const Index = () => {
                     ))}
                 </div>
               </div>
-
               {/* Fallback: Tất cả sản phẩm khác */}
               {filteredProducts.length > 0 &&
                 (() => {
