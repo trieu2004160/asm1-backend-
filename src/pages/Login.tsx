@@ -23,7 +23,15 @@ const Login = () => {
       const res = await authApi.login(email.trim(), password);
       authApi.persistSession(res);
       toast({ title: "Đăng nhập thành công" });
-      navigate("/");
+      
+      // Redirect to intended destination or home
+      const redirectPath = sessionStorage.getItem('redirectAfterLogin');
+      if (redirectPath) {
+        sessionStorage.removeItem('redirectAfterLogin');
+        navigate(redirectPath);
+      } else {
+        navigate("/");
+      }
     } catch (error: unknown) {
       const e = error as { response?: { data?: { message?: string } } };
       toast({
@@ -44,7 +52,15 @@ const Login = () => {
         const res = await authApi.googleLogin(response.credential);
         authApi.persistSession(res);
         toast({ title: "Đăng nhập Google thành công" });
-        navigate("/");
+        
+        // Redirect to intended destination or home
+        const redirectPath = sessionStorage.getItem('redirectAfterLogin');
+        if (redirectPath) {
+          sessionStorage.removeItem('redirectAfterLogin');
+          navigate(redirectPath);
+        } else {
+          navigate("/");
+        }
       } catch (error: unknown) {
         const e = error as { response?: { data?: { message?: string } } };
         toast({

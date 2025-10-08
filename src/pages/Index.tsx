@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Plus, ShoppingBag, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -14,6 +15,7 @@ import heroFashion from "@/assets/hero-fashion.jpg";
 
 const Index = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -219,7 +221,9 @@ const Index = () => {
   };
 
   const handleAuthRequired = () => {
-    setShowAuth(true);
+    // Save current location for redirect after login
+    sessionStorage.setItem('redirectAfterLogin', window.location.pathname + window.location.search);
+    navigate('/login');
   };
 
   return (
