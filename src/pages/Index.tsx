@@ -218,6 +218,10 @@ const Index = () => {
     // Navigation được handle trong ProductCard
   };
 
+  const handleAuthRequired = () => {
+    setShowAuth(true);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Navigation
@@ -474,10 +478,10 @@ const Index = () => {
                     variant="outline"
                     className="text-sm font-medium hover:bg-gray-900 hover:text-white border-gray-600"
                   >
-                    Xem tất cả →
+                    Xem Tất Cả
                   </Button>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                   {filteredProducts
                     .filter((product) => product.category === "polo")
                     .slice(0, 4)
@@ -493,13 +497,13 @@ const Index = () => {
                           onDelete={handleDeleteProduct}
                           onView={handleViewProduct}
                           canManage={!!user}
+                          isAuthenticated={!!user}
+                          onAuthRequired={handleAuthRequired}
                         />
                       </div>
                     ))}
                 </div>
-              </div>
-
-              {/* Category: Quần Jean */}
+              </div>              {/* Category: Quần Jean */}
               <div>
                 <div className="flex items-center justify-between mb-8">
                   <h3 className="text-2xl md:text-3xl font-bold text-foreground">
@@ -528,6 +532,8 @@ const Index = () => {
                           onDelete={handleDeleteProduct}
                           onView={handleViewProduct}
                           canManage={!!user}
+                          isAuthenticated={!!user}
+                          onAuthRequired={handleAuthRequired}
                         />
                       </div>
                     ))}
@@ -563,6 +569,8 @@ const Index = () => {
                           onDelete={handleDeleteProduct}
                           onView={handleViewProduct}
                           canManage={!!user}
+                          isAuthenticated={!!user}
+                          onAuthRequired={handleAuthRequired}
                         />
                       </div>
                     ))}
@@ -598,6 +606,8 @@ const Index = () => {
                           onDelete={handleDeleteProduct}
                           onView={handleViewProduct}
                           canManage={!!user}
+                          isAuthenticated={!!user}
+                          onAuthRequired={handleAuthRequired}
                         />
                       </div>
                     ))}
@@ -641,6 +651,8 @@ const Index = () => {
                               onDelete={handleDeleteProduct}
                               onView={handleViewProduct}
                               canManage={!!user}
+                              isAuthenticated={!!user}
+                              onAuthRequired={handleAuthRequired}
                             />
                           </div>
                         ))}

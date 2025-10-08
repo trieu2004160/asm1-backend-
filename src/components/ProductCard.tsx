@@ -18,6 +18,8 @@ interface ProductCardProps {
   onDelete: (id: string) => void;
   onView: (product: Product) => void;
   canManage?: boolean;
+  onAuthRequired?: () => void;
+  isAuthenticated?: boolean;
 }
 
 export function ProductCard({
@@ -26,6 +28,8 @@ export function ProductCard({
   onDelete,
   onView,
   canManage,
+  onAuthRequired,
+  isAuthenticated = false,
 }: ProductCardProps) {
   const navigate = useNavigate();
 
@@ -37,6 +41,10 @@ export function ProductCard({
   };
 
   const handleViewDetails = () => {
+    if (!isAuthenticated) {
+      onAuthRequired?.();
+      return;
+    }
     navigate(`/product/${product.id}`);
   };
 
