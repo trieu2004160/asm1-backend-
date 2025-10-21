@@ -1,7 +1,9 @@
-import { Edit, Trash2, Eye } from "lucide-react";
+import { Edit, Trash2, Eye, ShoppingCart, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
+import { cartUtils } from "@/lib/cart";
 
 export interface Product {
   id: string;
@@ -20,6 +22,7 @@ interface ProductCardProps {
   canManage?: boolean;
   onAuthRequired?: () => void;
   isAuthenticated?: boolean;
+  showAddToCart?: boolean;
 }
 
 export function ProductCard({
@@ -30,8 +33,10 @@ export function ProductCard({
   canManage,
   onAuthRequired,
   isAuthenticated = false,
+  showAddToCart = true,
 }: ProductCardProps) {
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("vi-VN", {
@@ -41,11 +46,25 @@ export function ProductCard({
   };
 
   const handleViewDetails = () => {
-    if (!isAuthenticated) {
-      onAuthRequired?.();
-      return;
-    }
     navigate(`/product/${product.id}`);
+  };
+
+  const handleAddToCart = () => {
+    const cartItem = {
+      _id: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.image,
+    };
+
+    cartUtils.addItem(cartItem, 1);
+    toast({
+      title: "Đã thêm vào giỏ hàng",
+      description: `${product.name} đã được thêm vào giỏ hàng`,
+    });
+
+    // Trigger storage event to update cart in other components
+    window.dispatchEvent(new Event("storage"));
   };
 
   return (
@@ -112,13 +131,26 @@ export function ProductCard({
           <span className="text-xl font-bold text-primary">
             {formatPrice(product.price)}
           </span>
-          <Button
-            size="sm"
-            className="btn-fashion text-sm"
-            onClick={handleViewDetails}
-          >
-            Xem chi tiết
-          </Button>
+          <div className="flex gap-2">
+            {showAddToCart && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleAddToCart}
+                className="flex items-center gap-1"
+              >
+                <Plus className="h-3 w-3" />
+                <ShoppingCart className="h-3 w-3" />
+              </Button>
+            )}
+            <Button
+              size="sm"
+              className="btn-fashion text-sm"
+              onClick={handleViewDetails}
+            >
+              Xem chi tiết
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>

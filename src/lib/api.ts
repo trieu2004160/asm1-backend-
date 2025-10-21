@@ -83,6 +83,44 @@ export interface AuthResponse {
     user: AuthUser;
 }
 
+export interface CartItem {
+    productId: string;
+    quantity: number;
+    price: number;
+    name: string;
+    image?: string;
+}
+
+export interface OrderProduct {
+    productId: string;
+    quantity: number;
+    price: number;
+    name: string;
+    image?: string;
+}
+
+export interface ShippingAddress {
+    fullName: string;
+    email: string;
+    phone: string;
+    address: string;
+    city: string;
+    postalCode: string;
+}
+
+export interface ApiOrder {
+    _id: string;
+    userId: string;
+    products: OrderProduct[];
+    totalAmount: number;
+    status: 'pending' | 'paid' | 'shipped' | 'delivered' | 'cancelled';
+    shippingAddress: ShippingAddress;
+    paymentMethod: 'cash_on_delivery' | 'stripe' | 'payos';
+    paymentId?: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
 export const authApi = {
     register: async (email: string, password: string): Promise<AuthResponse> => {
         const { data } = await api.post("/auth/register", { email, password });
@@ -111,6 +149,33 @@ export const authApi = {
         } catch {
             return null;
         }
+    },
+};
+
+export const ordersApi = {
+    list: async (): Promise<ApiOrder[]> => {
+        const { data } = await api.get("/orders");
+        return data;
+    },
+    get: async (id: string): Promise<ApiOrder> => {
+        const { data } = await api.get(`/orders/${id}`);
+        return data;
+    },
+    create: async (payload: {
+        products: { productId: string; quantity: number }[];
+        shippingAddress: ShippingAddress;
+        paymentMethod?: string;
+    }): Promise<ApiOrder> => {
+        const { data } = await api.post("/orders", payload);
+        return data;
+    },
+    updateStatus: async (id: string, status: string): Promise<ApiOrder> => {
+        const { data } = await api.put(`/orders/${id}/status`, { status });
+        return data;
+    },
+    updatePayment: async (id: string, paymentId: string, status: string): Promise<ApiOrder> => {
+        const { data } = await api.put(`/orders/${id}/payment`, { paymentId, status });
+        return data;
     },
 };
 

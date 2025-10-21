@@ -1,8 +1,19 @@
-import { Plus, Store, Search, LogIn, LogOut } from "lucide-react";
+import {
+  Plus,
+  Store,
+  Search,
+  LogIn,
+  LogOut,
+  ShoppingCart,
+  Package,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { AuthUser, authApi } from "@/lib/api";
+import { cartUtils, CartState } from "@/lib/cart";
 
 interface NavigationProps {
   onAddProduct: () => void;
@@ -22,20 +33,36 @@ export function Navigation({
   onLogout,
 }: NavigationProps) {
   const navigate = useNavigate();
+  const [cart, setCart] = useState<CartState>(cartUtils.getCart());
+
+  // Update cart state when localStorage changes
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setCart(cartUtils.getCart());
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
   return (
     <nav className="border-b bg-card/80 backdrop-blur-sm sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between gap-4">
           {/* Logo & Brand */}
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-gradient-to-br from-gray-800 to-black rounded-lg flex items-center justify-center">
-              <Store className="h-6 w-6 text-white" />
+          <div
+            className="flex items-center gap-2 cursor-pointer select-none hover:opacity-80 transition-opacity"
+            onClick={() => navigate("/")}
+          >
+            <div className="w-10 h-10 bg-gradient-to-br from-gray-800 to-black rounded-lg flex items-center justify-center cursor-pointer">
+              <Store className="h-6 w-6 text-white cursor-pointer" />
             </div>
-            <div>
-              <h1 className="text-xl font-bold text-foreground">
+            <div className="cursor-pointer">
+              <h1 className="text-xl font-bold text-foreground cursor-pointer">
                 FashionStore
               </h1>
-              <p className="text-xs !text-[#CDAD5D]">Premium Clothing</p>
+              <p className="text-xs !text-[#CDAD5D] cursor-pointer">
+                Premium Clothing
+              </p>
             </div>
           </div>
 
@@ -52,6 +79,34 @@ export function Navigation({
 
           {/* Actions */}
           <div className="flex items-center gap-2">
+            {/* Cart Button */}
+            <Button
+              variant="outline"
+              onClick={() => navigate("/cart")}
+              className="relative"
+            >
+              <ShoppingCart className="h-4 w-4" />
+              {cart.totalItems > 0 && (
+                <Badge
+                  variant="destructive"
+                  className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs"
+                >
+                  {cart.totalItems}
+                </Badge>
+              )}
+            </Button>
+
+            {/* Orders Button (for logged in users) */}
+            {user && (
+              <Button
+                className="bg-slate-900 hover:bg-slate-800"
+                onClick={() => navigate("/orders")}
+              >
+                <Package className="h-4 w-4 mr-2" />
+                Đơn hàng
+              </Button>
+            )}
+
             {user ? (
               <>
                 <span className="text-sm text-muted-foreground hidden sm:inline">

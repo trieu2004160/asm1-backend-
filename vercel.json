@@ -1,6 +1,8 @@
 {
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "https://asm1-backend-api-4.onrender.com/api/$1" }
+    { "source": "/api/(.*)", "destination": "https://your-backend-url.onrender.com/api/$1" }
   ]
 }
+
+
 

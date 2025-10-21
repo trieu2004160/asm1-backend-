@@ -11,6 +11,7 @@ import {
   RotateCcw,
   Heart,
   Share2,
+  Plus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +21,7 @@ import { ProductForm } from "@/components/ProductForm";
 import { productsApi, ApiProduct, authApi, AuthUser } from "@/lib/api";
 import { Product } from "@/components/ProductCard";
 import { Store, LogIn, LogOut } from "lucide-react";
+import { cartUtils } from "@/lib/cart";
 
 // Extended Product type với nhiều ảnh và thông tin chi tiết
 interface ExtendedProduct extends Product {
@@ -512,28 +514,68 @@ const ProductDetailPage = () => {
                 </div>
               )}
 
-              <Button
-                size="lg"
-                className="w-full bg-red-600 hover:bg-red-700 text-white"
-                disabled={!selectedColor || !selectedSize}
-                onClick={() => {
-                  if (selectedColor && selectedSize) {
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="flex-1"
+                  onClick={() => {
+                    const cartItem = {
+                      _id: product.id,
+                      name: product.name,
+                      price: product.price,
+                      image: product.image,
+                    };
+
+                    cartUtils.addItem(cartItem, quantity);
                     toast({
-                      title: "Mua ngay",
-                      description: `${product.name} - ${selectedColor}, ${selectedSize} (x${quantity})`,
+                      title: "Đã thêm vào giỏ hàng",
+                      description: `${product.name} (x${quantity}) đã được thêm vào giỏ hàng`,
                     });
-                  } else {
-                    toast({
-                      title: "Vui lòng chọn đầy đủ",
-                      description:
-                        "Hãy chọn màu sắc và kích thước trước khi mua",
-                      variant: "destructive",
-                    });
-                  }
-                }}
-              >
-                Mua ngay
-              </Button>
+
+                    // Trigger storage event to update cart in other components
+                    window.dispatchEvent(new Event("storage"));
+                  }}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Thêm vào giỏ
+                </Button>
+                <Button
+                  size="lg"
+                  className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+                  disabled={!selectedColor || !selectedSize}
+                  onClick={() => {
+                    if (selectedColor && selectedSize) {
+                      // Add to cart and go to checkout
+                      const cartItem = {
+                        _id: product.id,
+                        name: product.name,
+                        price: product.price,
+                        image: product.image,
+                      };
+
+                      cartUtils.addItem(cartItem, quantity);
+                      window.dispatchEvent(new Event("storage"));
+
+                      toast({
+                        title: "Đã thêm vào giỏ hàng",
+                        description: "Chuyển đến trang thanh toán...",
+                      });
+
+                      navigate("/checkout");
+                    } else {
+                      toast({
+                        title: "Vui lòng chọn đầy đủ",
+                        description:
+                          "Hãy chọn màu sắc và kích thước trước khi mua",
+                        variant: "destructive",
+                      });
+                    }
+                  }}
+                >
+                  Mua ngay
+                </Button>
+              </div>
 
               {(!selectedColor || !selectedSize) && (
                 <p className="text-sm text-gray-500 text-center mt-2">
