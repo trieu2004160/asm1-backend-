@@ -7,6 +7,8 @@ import {
   CreditCard,
   Calendar,
   User,
+  X,
+  Clock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,6 +25,7 @@ const OrderDetail = () => {
   const { toast } = useToast();
   const [order, setOrder] = useState<ApiOrder | null>(null);
   const [loading, setLoading] = useState(true);
+  const [cancelling, setCancelling] = useState(false);
   const [user, setUser] = useState<AuthUser | null>(authApi.getCurrentUser());
 
   useEffect(() => {
@@ -38,8 +41,26 @@ const OrderDetail = () => {
 
     if (id) {
       loadOrder(id);
+      // Check payment status for PayOS orders
+      checkPaymentStatus();
     }
   }, [id, user, navigate, toast]);
+
+  const checkPaymentStatus = async () => {
+    if (!id) return;
+
+    try {
+      const paymentStatus = await ordersApi.checkPaymentStatus(id);
+      console.log("💳 Payment status:", paymentStatus);
+
+      // If payment status changed, reload order
+      if (order && order.status !== paymentStatus.status) {
+        await loadOrder(id);
+      }
+    } catch (error) {
+      console.log("Could not check payment status:", error);
+    }
+  };
 
   const loadOrder = async (orderId: string) => {
     try {
@@ -109,6 +130,52 @@ const OrderDetail = () => {
       hour: "2-digit",
       minute: "2-digit",
     });
+  };
+
+  const canCancelOrder = (order: ApiOrder) => {
+    if (
+      order.status === "cancelled" ||
+      order.status === "delivered" ||
+      order.status === "shipped"
+    ) {
+      return false;
+    }
+
+    // For COD orders, check if within cancellation window
+    if (order.paymentMethod === "cash_on_delivery" && order.cancelableUntil) {
+      const now = new Date();
+      const cancelDeadline = new Date(order.cancelableUntil);
+      return now <= cancelDeadline;
+    }
+
+    // For online payment orders, only allow cancellation if pending
+    return order.status === "pending";
+  };
+
+  const handleCancelOrder = async () => {
+    if (!order || !canCancelOrder(order)) return;
+
+    try {
+      setCancelling(true);
+      await ordersApi.cancel(order._id);
+
+      toast({
+        title: "Hủy đơn hàng thành công",
+        description: "Đơn hàng đã được hủy thành công",
+      });
+
+      // Reload order to get updated status
+      await loadOrder(order._id);
+    } catch (error: any) {
+      console.error("Error cancelling order:", error);
+      toast({
+        title: "Lỗi hủy đơn hàng",
+        description: error?.response?.data?.message || "Không thể hủy đơn hàng",
+        variant: "destructive",
+      });
+    } finally {
+      setCancelling(false);
+    }
   };
 
   if (!user) {
@@ -380,6 +447,91 @@ const OrderDetail = () => {
                     </p>
                   </div>
                 )}
+
+                {order.status === "pending" &&
+                  order.paymentMethod === "payos" &&
+                  order.paymentUrl && (
+                    <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                      <p className="text-sm text-blue-800 mb-3">
+                        Đơn hàng đang chờ thanh toán. Vui lòng hoàn tất thanh
+                        toán để tiếp tục.
+                      </p>
+                      <div className="space-y-2">
+                        <Button
+                          onClick={() => {
+                            console.log("Chuyển hướng đến:", order.paymentUrl);
+                            window.location.href = order.paymentUrl!;
+                          }}
+                          className="w-full"
+                        >
+                          Thanh toán ngay
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={checkPaymentStatus}
+                          className="w-full"
+                        >
+                          Kiểm tra trạng thái thanh toán
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                {order.paymentMethod === "cash_on_delivery" &&
+                  order.cancelableUntil && (
+                    <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Clock className="h-4 w-4 text-green-600" />
+                        <p className="text-sm text-green-800 font-medium">
+                          Có thể hủy đơn trong 24 giờ
+                        </p>
+                      </div>
+                      <p className="text-sm text-green-700">
+                        Bạn có thể hủy đơn hàng COD trước{" "}
+                        {formatDate(order.cancelableUntil)}
+                      </p>
+                    </div>
+                  )}
+
+                {canCancelOrder(order) && (
+                  <div className="mt-4">
+                    <Button
+                      variant="destructive"
+                      onClick={handleCancelOrder}
+                      disabled={cancelling}
+                      className="w-full"
+                    >
+                      {cancelling ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
+                          Đang hủy...
+                        </>
+                      ) : (
+                        <>
+                          <X className="h-4 w-4 mr-2" />
+                          Hủy đơn hàng
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                )}
+
+                {order.paymentMethod === "cash_on_delivery" &&
+                  order.cancelableUntil &&
+                  new Date() > new Date(order.cancelableUntil) &&
+                  order.status !== "cancelled" && (
+                    <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                      <div className="flex items-center gap-2 mb-2">
+                        <X className="h-4 w-4 text-red-600" />
+                        <p className="text-sm text-red-800 font-medium">
+                          Không thể hủy đơn
+                        </p>
+                      </div>
+                      <p className="text-sm text-red-700">
+                        Thời gian hủy đơn COD đã hết hạn (24 giờ)
+                      </p>
+                    </div>
+                  )}
               </CardContent>
             </Card>
           </div>
@@ -392,4 +544,3 @@ const OrderDetail = () => {
 };
 
 export default OrderDetail;
-

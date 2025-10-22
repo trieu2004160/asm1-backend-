@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, CreditCard, Truck } from "lucide-react";
+import { ArrowLeft, CreditCard, Truck, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -20,6 +20,8 @@ const Checkout = () => {
   const [user, setUser] = useState<AuthUser | null>(authApi.getCurrentUser());
   const [loading, setLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("cash_on_delivery");
+  const [autoSaveTimeout, setAutoSaveTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [isAutoSaving, setIsAutoSaving] = useState(false);
 
   const [shippingForm, setShippingForm] = useState<ShippingAddress>({
     fullName: "",
@@ -53,12 +55,96 @@ const Checkout = () => {
       return;
     }
 
+    // Load saved shipping info and update form
+    loadSavedShippingInfo();
+
     // Update email if user is logged in
     setShippingForm((prev) => ({
       ...prev,
       email: user.email,
     }));
   }, [user, cart.items.length, navigate, toast]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (autoSaveTimeout) {
+        clearTimeout(autoSaveTimeout);
+      }
+    };
+  }, [autoSaveTimeout]);
+
+  const loadSavedShippingInfo = async () => {
+    try {
+      const { savedShippingInfo } = await authApi.getShippingInfo();
+      if (savedShippingInfo) {
+        setShippingForm((prev) => ({
+          ...prev,
+          fullName: savedShippingInfo.fullName || "",
+          phone: savedShippingInfo.phone || "",
+          address: savedShippingInfo.address || "",
+          city: savedShippingInfo.city || "",
+          postalCode: savedShippingInfo.postalCode || "",
+        }));
+      }
+    } catch (error) {
+      console.log("No saved shipping info found or error loading:", error);
+    }
+  };
+
+  const saveShippingInfoForFuture = useCallback(async (showToast = false) => {
+    try {
+      await authApi.saveShippingInfo({
+        fullName: shippingForm.fullName,
+        phone: shippingForm.phone,
+        address: shippingForm.address,
+        city: shippingForm.city,
+        postalCode: shippingForm.postalCode,
+      });
+      console.log("✅ Shipping info saved for future use");
+      if (showToast) {
+        toast({
+          title: "Đã lưu thông tin",
+          description: "Thông tin giao hàng đã được lưu để sử dụng lần sau",
+        });
+      }
+    } catch (error) {
+      console.log("Failed to save shipping info:", error);
+      if (showToast) {
+        toast({
+          title: "Lỗi lưu thông tin",
+          description: "Không thể lưu thông tin giao hàng",
+          variant: "destructive",
+        });
+      }
+    }
+  }, [shippingForm, toast]);
+
+  // Auto-save shipping info when user types (with debounce)
+  const handleShippingInfoChange = useCallback((field: string, value: string) => {
+    setShippingForm(prev => ({ ...prev, [field]: value }));
+    
+    // Clear existing timeout
+    if (autoSaveTimeout) {
+      clearTimeout(autoSaveTimeout);
+    }
+    
+    // Set new timeout for auto-save (2 seconds after user stops typing)
+    const timeout = setTimeout(async () => {
+      // Only auto-save if all required fields have some content
+      if (shippingForm.fullName.trim() && 
+          shippingForm.phone.trim() && 
+          shippingForm.address.trim() && 
+          shippingForm.city.trim() && 
+          shippingForm.postalCode.trim()) {
+        setIsAutoSaving(true);
+        await saveShippingInfoForFuture(false); // Don't show toast for auto-save
+        setIsAutoSaving(false);
+      }
+    }, 2000);
+    
+    setAutoSaveTimeout(timeout);
+  }, [autoSaveTimeout, shippingForm, saveShippingInfoForFuture]);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -113,18 +199,42 @@ const Checkout = () => {
         user: user?.email,
       });
 
-      const order = await ordersApi.create(orderData);
+      if (paymentMethod === "cash_on_delivery") {
+        // Xử lý thanh toán COD - tạo đơn hàng thành công ngay lập tức
+        const order = await ordersApi.create(orderData);
 
-      // Clear cart after successful order
-      cartUtils.clearCart();
-      setCart(cartUtils.getCart());
+        // Save shipping info for future use
+        await saveShippingInfoForFuture(false);
 
-      toast({
-        title: "Đặt hàng thành công!",
-        description: `Đơn hàng #${order._id.slice(-8)} đã được tạo`,
-      });
+        // Clear cart after successful order
+        cartUtils.clearCart();
+        setCart(cartUtils.getCart());
 
-      navigate(`/orders/${order._id}`);
+        toast({
+          title: "Đặt hàng thành công!",
+          description: `Đơn hàng #${order._id.slice(-8)} đã được tạo. Bạn có thể hủy đơn trong 24 giờ tới.`,
+        });
+
+        navigate(`/orders/${order._id}`);
+      } else if (paymentMethod === "payos") {
+        // Xử lý thanh toán PayOS
+        const order = await ordersApi.createWithPayOS(orderData);
+
+        // Save shipping info for future use
+        await saveShippingInfoForFuture(false);
+
+        // Clear cart after successful order creation
+        cartUtils.clearCart();
+        setCart(cartUtils.getCart());
+
+        toast({
+          title: "Đặt hàng thành công!",
+          description: `Đơn hàng #${order._id.slice(-8)} đã được tạo. Bạn sẽ được chuyển đến trang thanh toán.`,
+        });
+
+        // Navigate to order detail page which will handle payment
+        navigate(`/orders/${order._id}`);
+      }
     } catch (error: any) {
       console.error("Order creation error:", error);
       toast({
@@ -183,10 +293,27 @@ const Checkout = () => {
             <div className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Truck className="h-5 w-5" />
-                    Thông tin giao hàng
-                  </CardTitle>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="flex items-center gap-2">
+                      <Truck className="h-5 w-5" />
+                      Thông tin giao hàng
+                      {isAutoSaving && (
+                        <span className="text-sm text-muted-foreground ml-2">
+                          Đang lưu...
+                        </span>
+                      )}
+                    </CardTitle>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => saveShippingInfoForFuture(true)}
+                      className="flex items-center gap-2"
+                    >
+                      <Save className="h-4 w-4" />
+                      Lưu thông tin
+                    </Button>
+                  </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -195,12 +322,7 @@ const Checkout = () => {
                       <Input
                         id="fullName"
                         value={shippingForm.fullName}
-                        onChange={(e) =>
-                          setShippingForm({
-                            ...shippingForm,
-                            fullName: e.target.value,
-                          })
-                        }
+                        onChange={(e) => handleShippingInfoChange("fullName", e.target.value)}
                         className={errors.fullName ? "border-destructive" : ""}
                       />
                       {errors.fullName && (
@@ -216,12 +338,7 @@ const Checkout = () => {
                         id="email"
                         type="email"
                         value={shippingForm.email}
-                        onChange={(e) =>
-                          setShippingForm({
-                            ...shippingForm,
-                            email: e.target.value,
-                          })
-                        }
+                        onChange={(e) => handleShippingInfoChange("email", e.target.value)}
                         className={errors.email ? "border-destructive" : ""}
                       />
                       {errors.email && (
@@ -237,12 +354,7 @@ const Checkout = () => {
                     <Input
                       id="phone"
                       value={shippingForm.phone}
-                      onChange={(e) =>
-                        setShippingForm({
-                          ...shippingForm,
-                          phone: e.target.value,
-                        })
-                      }
+                      onChange={(e) => handleShippingInfoChange("phone", e.target.value)}
                       className={errors.phone ? "border-destructive" : ""}
                     />
                     {errors.phone && (
@@ -255,12 +367,7 @@ const Checkout = () => {
                     <Textarea
                       id="address"
                       value={shippingForm.address}
-                      onChange={(e) =>
-                        setShippingForm({
-                          ...shippingForm,
-                          address: e.target.value,
-                        })
-                      }
+                      onChange={(e) => handleShippingInfoChange("address", e.target.value)}
                       className={errors.address ? "border-destructive" : ""}
                       rows={3}
                     />
@@ -277,12 +384,7 @@ const Checkout = () => {
                       <Input
                         id="city"
                         value={shippingForm.city}
-                        onChange={(e) =>
-                          setShippingForm({
-                            ...shippingForm,
-                            city: e.target.value,
-                          })
-                        }
+                        onChange={(e) => handleShippingInfoChange("city", e.target.value)}
                         className={errors.city ? "border-destructive" : ""}
                       />
                       {errors.city && (
@@ -297,12 +399,7 @@ const Checkout = () => {
                       <Input
                         id="postalCode"
                         value={shippingForm.postalCode}
-                        onChange={(e) =>
-                          setShippingForm({
-                            ...shippingForm,
-                            postalCode: e.target.value,
-                          })
-                        }
+                        onChange={(e) => handleShippingInfoChange("postalCode", e.target.value)}
                         className={
                           errors.postalCode ? "border-destructive" : ""
                         }
@@ -350,17 +447,17 @@ const Checkout = () => {
                       <input
                         type="radio"
                         name="paymentMethod"
-                        value="stripe"
-                        checked={paymentMethod === "stripe"}
+                        value="payos"
+                        checked={paymentMethod === "payos"}
                         onChange={(e) => setPaymentMethod(e.target.value)}
                         className="h-4 w-4"
                       />
                       <div>
                         <div className="font-medium">
-                          Thanh toán online (Stripe)
+                          Thanh toán online (PayOS)
                         </div>
                         <div className="text-sm text-muted-foreground">
-                          Thanh toán bằng thẻ tín dụng/ghi nợ
+                          Thanh toán bằng PayOS - an toàn và nhanh chóng
                         </div>
                       </div>
                     </label>

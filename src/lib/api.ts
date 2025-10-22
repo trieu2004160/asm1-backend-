@@ -76,6 +76,13 @@ export const productsApi = {
 export interface AuthUser {
     _id: string;
     email: string;
+    savedShippingInfo?: {
+        fullName?: string;
+        phone?: string;
+        address?: string;
+        city?: string;
+        postalCode?: string;
+    };
 }
 
 export interface AuthResponse {
@@ -117,6 +124,8 @@ export interface ApiOrder {
     shippingAddress: ShippingAddress;
     paymentMethod: 'cash_on_delivery' | 'stripe' | 'payos';
     paymentId?: string;
+    paymentUrl?: string; // PayOS payment URL
+    cancelableUntil?: string; // Thời gian có thể hủy đơn (cho COD)
     createdAt: string;
     updatedAt: string;
 }
@@ -150,6 +159,20 @@ export const authApi = {
             return null;
         }
     },
+    saveShippingInfo: async (shippingInfo: {
+        fullName: string;
+        phone: string;
+        address: string;
+        city: string;
+        postalCode: string;
+    }): Promise<{ message: string; savedShippingInfo: any }> => {
+        const { data } = await api.put("/auth/save-shipping-info", shippingInfo);
+        return data;
+    },
+    getShippingInfo: async (): Promise<{ savedShippingInfo: any }> => {
+        const { data } = await api.get("/auth/shipping-info");
+        return data;
+    },
 };
 
 export const ordersApi = {
@@ -169,12 +192,37 @@ export const ordersApi = {
         const { data } = await api.post("/orders", payload);
         return data;
     },
+    createWithPayOS: async (payload: {
+        products: { productId: string; quantity: number }[];
+        shippingAddress: ShippingAddress;
+        paymentMethod?: string;
+    }): Promise<ApiOrder> => {
+        const { data } = await api.post("/orders/payos", payload);
+        return data;
+    },
     updateStatus: async (id: string, status: string): Promise<ApiOrder> => {
         const { data } = await api.put(`/orders/${id}/status`, { status });
         return data;
     },
     updatePayment: async (id: string, paymentId: string, status: string): Promise<ApiOrder> => {
         const { data } = await api.put(`/orders/${id}/payment`, { paymentId, status });
+        return data;
+    },
+    cancel: async (id: string): Promise<{ message: string; order: ApiOrder }> => {
+        const { data } = await api.put(`/orders/${id}/cancel`);
+        return data;
+    },
+    checkPaymentStatus: async (id: string): Promise<{
+        orderId: string;
+        status: string;
+        paymentMethod: string;
+        paymentUrl?: string;
+    }> => {
+        const { data } = await api.get(`/orders/${id}/payment-status`);
+        return data;
+    },
+    completePayment: async (id: string, paymentStatus: string): Promise<{ message: string; order: ApiOrder }> => {
+        const { data } = await api.post(`/orders/${id}/complete-payment`, { paymentStatus });
         return data;
     },
 };

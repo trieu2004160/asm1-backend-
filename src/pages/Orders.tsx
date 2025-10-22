@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Package, Eye, Calendar, CreditCard } from "lucide-react";
+import { Package, Eye, Calendar, CreditCard, Clock, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +15,7 @@ const Orders = () => {
   const { toast } = useToast();
   const [orders, setOrders] = useState<ApiOrder[]>([]);
   const [loading, setLoading] = useState(true);
+  const [cancellingOrders, setCancellingOrders] = useState<Set<string>>(new Set());
   const [user, setUser] = useState<AuthUser | null>(authApi.getCurrentUser());
 
   useEffect(() => {
@@ -98,6 +99,50 @@ const Orders = () => {
       hour: "2-digit",
       minute: "2-digit",
     });
+  };
+
+  const canCancelOrder = (order: ApiOrder) => {
+    if (order.status === "cancelled" || order.status === "delivered" || order.status === "shipped") {
+      return false;
+    }
+    
+    // For COD orders, check if within cancellation window
+    if (order.paymentMethod === "cash_on_delivery" && order.cancelableUntil) {
+      const now = new Date();
+      const cancelDeadline = new Date(order.cancelableUntil);
+      return now <= cancelDeadline;
+    }
+    
+    // For online payment orders, only allow cancellation if pending
+    return order.status === "pending";
+  };
+
+  const handleCancelOrder = async (orderId: string) => {
+    try {
+      setCancellingOrders(prev => new Set(prev).add(orderId));
+      await ordersApi.cancel(orderId);
+      
+      toast({
+        title: "Hủy đơn hàng thành công",
+        description: "Đơn hàng đã được hủy thành công",
+      });
+      
+      // Reload orders to get updated status
+      await loadOrders();
+    } catch (error: any) {
+      console.error("Error cancelling order:", error);
+      toast({
+        title: "Lỗi hủy đơn hàng",
+        description: error?.response?.data?.message || "Không thể hủy đơn hàng",
+        variant: "destructive",
+      });
+    } finally {
+      setCancellingOrders(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(orderId);
+        return newSet;
+      });
+    }
   };
 
   if (!user) {
@@ -227,8 +272,61 @@ const Orders = () => {
                     </p>
                   </div>
 
+                  {/* Cancellation Info */}
+                  {order.paymentMethod === "cash_on_delivery" && order.cancelableUntil && (
+                    <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Clock className="h-4 w-4 text-green-600" />
+                        <p className="text-sm text-green-800 font-medium">
+                          Có thể hủy đơn trong 24 giờ
+                        </p>
+                      </div>
+                      <p className="text-xs text-green-700">
+                        Hết hạn: {formatDate(order.cancelableUntil)}
+                      </p>
+                    </div>
+                  )}
+
+                  {order.paymentMethod === "cash_on_delivery" && order.cancelableUntil && 
+                   new Date() > new Date(order.cancelableUntil) && order.status !== "cancelled" && (
+                    <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                      <div className="flex items-center gap-2 mb-1">
+                        <X className="h-4 w-4 text-red-600" />
+                        <p className="text-sm text-red-800 font-medium">
+                          Không thể hủy đơn
+                        </p>
+                      </div>
+                      <p className="text-xs text-red-700">
+                        Thời gian hủy đơn COD đã hết hạn
+                      </p>
+                    </div>
+                  )}
+
                   {/* Actions */}
-                  <div className="flex justify-end mt-4">
+                  <div className="flex justify-between items-center mt-4">
+                    <div className="flex gap-2">
+                      {canCancelOrder(order) && (
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleCancelOrder(order._id)}
+                          disabled={cancellingOrders.has(order._id)}
+                          className="flex items-center gap-2"
+                        >
+                          {cancellingOrders.has(order._id) ? (
+                            <>
+                              <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                              Đang hủy...
+                            </>
+                          ) : (
+                            <>
+                              <X className="h-4 w-4" />
+                              Hủy đơn
+                            </>
+                          )}
+                        </Button>
+                      )}
+                    </div>
                     <Button
                       variant="outline"
                       onClick={() => navigate(`/orders/${order._id}`)}
